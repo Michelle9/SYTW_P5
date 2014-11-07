@@ -5,7 +5,7 @@
     %th
       Visitas
     %th
-      Autor
+      Propietario
     %th
       Estadísticas
   - @list.each do |elem|
@@ -21,7 +21,7 @@
         - if elem.id_usu != " "
           #{elem.id_usu}
         - else
-          PUBLICA
+          Anónimo
       %td
         %a{:href=>"/graficas/#{elem.id.to_s(Base)}", :title => "Estadísticas detalladas"} VER
           

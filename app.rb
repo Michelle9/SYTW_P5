@@ -59,20 +59,19 @@ Base = 36
 get '/' do
 	puts "inside get '/': #{params}"
 	session[:email] = " "
-	@list = Shortenedurl.all(:order => [ :id.asc ], :limit => 20, :id_usu => " ")           
+	@list = Shortenedurl.all(:order => [ :id.asc ], :limit => 20, :id_usu => " ")  #listar url generales,las que no estan identificadas         
 	haml :index
 end
 
-#---------------------------------------------- 
-
+#----------------------------------------------
 
 get '/auth/:name/callback' do
-    session[:auth] = @auth = request.env['omniauth.auth']
+        session[:auth] = @auth = request.env['omniauth.auth']
 	session[:email] = @auth['info'].email
         if session[:auth] then  #@auth
         begin
                 puts "inside get '/': #{params}"
-                @list = Shortenedurl.all(:order => [ :id.asc ], :limit => 20, :id_usu => session[:email])     
+                @list = Shortenedurl.all(:order => [ :id.asc ], :limit => 20, :id_usu => session[:email])   #listar url del usuario  
                 haml :index
         end
         else
