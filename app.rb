@@ -127,7 +127,8 @@ end
 get '/graficas/:shortened' do
 	
 	@country = Hash.new
-	@ciudad  = Hash.new	
+	@ciudad  = Hash.new
+	@fecha = Hash.new
 	
 	url = Shortenedurl.first(:id => params[:shortened].to_i(Base)) 
 	@list = Shortenedurl.first(:to => url.to) 
@@ -136,7 +137,7 @@ get '/graficas/:shortened' do
         
 	
 	visit.each { |visit|
-        	if(@country[visit.country].nil? == true)
+        if(@country[visit.country].nil? == true)
 			@country[visit.country] = 1
 		else
 			@country[visit.country] +=1
@@ -147,6 +148,12 @@ get '/graficas/:shortened' do
 		else
 			@ciudad[visit.city] +=1
 		end
+	           
+	    if(@fecha["#{visit.created_at.day} - #{visit.created_at.month} - #{visit.created_at.year}"].nil?)
+		  @fecha["#{visit.created_at.day} - #{visit.created_at.month} - #{visit.created_at.year}"] = 1
+		else
+		  @fecha["#{visit.created_at.day} - #{visit.created_at.month} - #{visit.created_at.year}"] += 1
+    end
 	}	 	
 		
 
