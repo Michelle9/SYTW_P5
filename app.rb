@@ -10,6 +10,12 @@ require 'omniauth-google-oauth2'
 require 'pry'
 require 'erubis'               
 require 'pp'
+require 'chartkick'
+require 'xmlsimple'
+require 'restclient'
+require 'dm-timestamps'
+require 'dm-core'
+require 'dm-types'
 
 
 use OmniAuth::Builder do       
@@ -53,7 +59,7 @@ Base = 36
 get '/' do
 	puts "inside get '/': #{params}"
 	session[:email] = " "
-	@list = ShortenedUrl.all(:order => [ :id.asc ], :limit => 20, :id_usu => " ")         
+	@list = Shortenedurl.all(:order => [ :id.asc ], :limit => 20, :id_usu => " ")  #listar url generales,las que no estan identificadas         
 	haml :index
 end
 
@@ -63,7 +69,7 @@ get '/auth/:name/callback' do
         if session[:auth] then  #@auth
         begin
                 puts "inside get '/': #{params}"
-                @list = ShortenedUrl.all(:order => [ :id.asc ], :limit => 20, :id_usu => session[:email])   
+                @list = Shortenedurl.all(:order => [ :id.asc ], :limit => 20, :id_usu => session[:email])   #listar url del usuario  
                 haml :index
         end
         else
@@ -88,9 +94,9 @@ post '/' do
   if uri.is_a? URI::HTTP or uri.is_a? URI::HTTPS then
     begin
       if params[:to] == " "
-                @short_url = ShortenedUrl.first_or_create(:url => params[:url], :id_usu => session[:email]) 
+                @short_url = Shortenedurl.first_or_create(:url => params[:url], :id_usu => session[:email], :num_visit => 0) 
       else
-                @short_url = ShortenedUrl.first_or_create(:url => params[:url], :to => params[:to], :id_usu => session[:email])   
+                @short_url = Shortenedurl.first_or_create(:url => params[:url], :to => params[:to], :id_usu => session[:email], :num_visit => 0)  #guardamos la dirección corta 
       end
     rescue Exception => e
       puts "EXCEPTION!!!!!!!!!!!!!!!!!!!"
@@ -105,18 +111,73 @@ end
 
 #---------------------------------------------- 
 
+get '/estadisticas' do
+        if session[:auth]
+                @list = Shortenedurl.all(:order => [ :num_visit.desc ], :limit => 20, :id_usu => session[:email])   #listar url del usuario            
+        else
+                @list = Shortenedurl.all(:order => [ :id.asc ], :limit => 20, :id_usu => " ")  #listar url generales,las que no estan identificada    s
+        end
+        haml :estadisticas
+end
+
+#---------------------------------------------- 
+
+get '/graficas/:shortened' do
+	
+	@country = Hash.new
+	@ciudad  = Hash.new	
+	
+	url = Shortenedurl.first(:id => params[:shortened].to_i(Base)) 
+	@list = Shortenedurl.first(:to => url.to)  #para sacar los datos del url corto
+
+	visit = Visit.all(:shortenedurl => url)  #datos guardados en tabla visit de ese url corto
+        
+	#guardamos en el hash las veces que aparece ese pais,ciudad
+	visit.each { |visit|
+        	if(@country[visit.country].nil? == true)
+			@country[visit.country] = 1
+		else
+			@country[visit.country] +=1
+		end
+		
+		if(@ciudad[visit.city].nil? == true)
+			@ciudad[visit.city] = 1
+		else
+			@ciudad[visit.city] +=1
+		end
+	}	 	
+		
+
+	haml :graficas
+end
+
+#---------------------------------------------- 
+
+#---------------------------------------------- 
+
 get '/:shortened' do
   puts "inside get '/:shortened': #{params}"
-  short_url = ShortenedUrl.first(:id => params[:shortened].to_i(Base))
-  to_url = ShortenedUrl.first(:to => params[:shortened])
+  short_url = Shortenedurl.first(:id => params[:shortened].to_i(Base))
+  to_url = Shortenedurl.first(:to => params[:shortened])
+
   # HTTP status codes that start with 3 (such as 301, 302) tell the
   # browser to go look for that resource in another location. This is
   # used in the case where a web page has moved to another location or
   # is no longer at the original location. The two most commonly used
   # redirection status codes are 301 Move Permanently and 302 Found.
 if to_url
+	to_url.num_visit += 1  #incrementamos una visita
+  	to_url.save
+	data = get_data
+	visit = Visit.new(:ip => data['ip'], :country => data['countryName'], :countryCode => data['countryCode'], :city => data["city"],:latitud => data["latitude"], :longitud => data["longitude"], :shortenedurl => to_url, :created_at => Time.now)
+	visit.save
         redirect to_url.url, 301
   else
+	short_url.num_visit += 1  #incrementamos una visita
+	short_url.save
+	data = get_data
+	visit = Visit.new(:ip => data['ip'], :country => data['countryName'], :countryCode => data['countryCode'], :city => data["city"],:latitud => data["latitude"], :longitud => data["longitude"], :shortenedurl => short_url, :created_at => Time.now)	
+	visit.save
         redirect short_url.url, 301
   end
 
@@ -126,4 +187,18 @@ end
 #---------------------------------------------- 
 
 
-error do erb :not_found end
+error do 
+	erb :not_found 
+end
+
+def get_remote_ip(env)   #Este método ilustra formas de obtener la IP de la visita
+	puts "request.url = #{request.url}"
+	puts "request.ip = #{request.ip}"
+	puts env
+	if addr = env['HTTP_X_FORWARDED_FOR']
+		puts "env['HTTP_X_FORWARDED_FOR'] = #{addr}"
+		addr.split(',').first.strip
+	else
+		puts "env['REMOTE_ADDR'] = #{env['REMOTE_ADDR']}"
+		env['REMOTE_ADDR']
+	end
