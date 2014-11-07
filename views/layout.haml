@@ -1,40 +1,65 @@
 !!!
-%html{:lang => "en"}
-  %head
-    %meta{:charset => "UTF-8"}
-      %title SyTW - P4
-      %link{:href => "/css/style.css", :rel => "stylesheet"}
-        / Insertar CSS
-        %link{:href => "http://netdna.bootstrapcdn.com/font-\nawesome/4.2.0/css/font-awesome.css", :rel => "stylesheet"}
-  %body
-    .tit
-      %p Acortar URL's
-    .nav
-      .contenido
-        %i.fa.fa-google
-        %a{:href => "/auth/google_oauth2"} SingIn
-      .contenido1
-        %a{:href => "/nologin"} Logout
-        %i.fa.fa-power-off
-    .form
-      %form{:action => "/", :method => "POST"}
-        %input#formu{:placeholder => "Introduce la URL", :type => "text", :name => "url"}
-          %br
-            %input#formu1{:placeholder => "Short URL (opcional)", :type => "text", :name => "opcional"}
-              %br
-                %input#bottom{:type => "submit", :value => "Cortar"}
-                  %i.fa.fa-scissors.fa-rotate-270
-    .form1
-      -if (session[:email] !=nil)
-        %p#respuesta URL'S de #{@mail}
-      -else
-        %p#respuesta URL'S
-      =yield
-    #footer
-      %p
-        %b © SYTW
-        \- Práctica 4 © - Realizado por:
-        %b Jhoanmary Prz Fariña y Santiago Sainz Fernández
+%html
+%head
+%meta{:content => "text/html; charset=UTF-8", "http-equiv" => "content-type"}/
+%meta{:charset => "utf-8"}/
+%title shortUrl
+%meta{:content => "width=device-width, initial-scale=1, maximum-scale=1", :name => "viewport"}/
+%link{:href => "/css/bootstrap.min.css", :rel => "stylesheet"}/
+%link{:type => "text/css", :rel => "stylesheet", :href => "https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"}
+%link{:type => "text/css", :rel => "stylesheet", :href => "https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"}
+%link{:type => "text/css", :rel => "stylesheet", :href => "http://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic"}
+%link{:type => "text/css", :rel => "stylesheet", :href => "http://fonts.googleapis.com/css?family=Montserrat:400,700"}
+%link{:type => "text/css", :rel => "stylesheet", :href =>"http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css"}
+%link{:href => "/css/styles.css", :rel => "stylesheet"}/
+%script(src="//www.google.com/jsapi")
+%script(src="/js/chartkick.js")
+%script(src="//html5shim.googlecode.com/svn/trunk/html5.js")
+
+%body
+        .container-full
+                .row
+                        .col-lg-12.text-center.v-center
+                                %h1 SYTW P5                   
+                                %p.lead Práctica 5:  Estadísticas de URL's
+                                %a.btn.btn-primary.btn-lg{:href=>'/'} HOME
+                                -if !session[:auth]
+                                        %a.btn.btn-success.btn-lg{:href=>'/auth/google_oauth2'} Sign In with Google    
+                                -else
+                                        %a.btn.btn-danger.btn-lg{:href=>'/noGoogle'} Logut
+                                %a.btn.btn-danger.btn-lg{:href=>'/estadisticas'} Estadísticas
+                                %br/
+                                %br/
+                                %form.form-inline{:action => "/", :method => "post"}
+  
+                                        .form-group{:style => "text-align:center;margin:0 auto;"}
+                                                %label(for="url")               
+                                                %input.form-control.input-lg{:autofocus => "", :name => "url", :placeholder => "Introduce Tu URL", :size => "60", :type => "text", :value => ""}/       
+                                                %input.form-control.input-lg{:autofocus => "", :name => "to", :placeholder => "short URL (opcional)", :size =>     "15", :type => "text", :value => ""}/        
+                                                %button.btn.btn-lg.btn-primary{:type => "submit", :value => "submit"} Cortar
+                %br/
+                %br/
+                %br/
+                %br/
+                %br/
+                %br/
+                %br/
+                %br/
+                %br/
+        .row
+                .col-md-12
+                        =yield
+        .row
+                .col-md-12
+                        %br/
+                        %br/
+                        %p.text-center SYTW P5 © Copyright ©
+                        %br/
+                        %br/
+/ script references
+%script{:src => "//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"}
+%script{:src => "../js/bootstrap.min.js"}
+%script(src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js")
 
 
 
