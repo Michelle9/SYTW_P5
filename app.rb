@@ -59,17 +59,20 @@ Base = 36
 get '/' do
 	puts "inside get '/': #{params}"
 	session[:email] = " "
-	@list = Shortenedurl.all(:order => [ :id.asc ], :limit => 20, :id_usu => " ")  #listar url generales,las que no estan identificadas         
+	@list = Shortenedurl.all(:order => [ :id.asc ], :limit => 20, :id_usu => " ")           
 	haml :index
 end
 
+#---------------------------------------------- 
+
+
 get '/auth/:name/callback' do
-        session[:auth] = @auth = request.env['omniauth.auth']
+    session[:auth] = @auth = request.env['omniauth.auth']
 	session[:email] = @auth['info'].email
         if session[:auth] then  #@auth
         begin
                 puts "inside get '/': #{params}"
-                @list = Shortenedurl.all(:order => [ :id.asc ], :limit => 20, :id_usu => session[:email])   #listar url del usuario  
+                @list = Shortenedurl.all(:order => [ :id.asc ], :limit => 20, :id_usu => session[:email])     
                 haml :index
         end
         else
@@ -96,7 +99,7 @@ post '/' do
       if params[:to] == " "
                 @short_url = Shortenedurl.first_or_create(:url => params[:url], :id_usu => session[:email], :num_visit => 0) 
       else
-                @short_url = Shortenedurl.first_or_create(:url => params[:url], :to => params[:to], :id_usu => session[:email], :num_visit => 0)  #guardamos la dirección corta 
+                @short_url = Shortenedurl.first_or_create(:url => params[:url], :to => params[:to], :id_usu => session[:email], :num_visit => 0)   
       end
     rescue Exception => e
       puts "EXCEPTION!!!!!!!!!!!!!!!!!!!"
@@ -113,9 +116,9 @@ end
 
 get '/estadisticas' do
         if session[:auth]
-                @list = Shortenedurl.all(:order => [ :num_visit.desc ], :limit => 20, :id_usu => session[:email])   #listar url del usuario            
+                @list = Shortenedurl.all(:order => [ :num_visit.desc ], :limit => 20, :id_usu => session[:email])              
         else
-                @list = Shortenedurl.all(:order => [ :id.asc ], :limit => 20, :id_usu => " ")  #listar url generales,las que no estan identificada    s
+                @list = Shortenedurl.all(:order => [ :id.asc ], :limit => 20, :id_usu => " ")  
         end
         haml :estadisticas
 end
@@ -128,11 +131,11 @@ get '/graficas/:shortened' do
 	@ciudad  = Hash.new	
 	
 	url = Shortenedurl.first(:id => params[:shortened].to_i(Base)) 
-	@list = Shortenedurl.first(:to => url.to)  #para sacar los datos del url corto
+	@list = Shortenedurl.first(:to => url.to) 
 
-	visit = Visit.all(:shortenedurl => url)  #datos guardados en tabla visit de ese url corto
+	visit = Visit.all(:shortenedurl => url)  
         
-	#guardamos en el hash las veces que aparece ese pais,ciudad
+	
 	visit.each { |visit|
         	if(@country[visit.country].nil? == true)
 			@country[visit.country] = 1

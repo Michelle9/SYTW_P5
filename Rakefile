@@ -1,5 +1,11 @@
+task(:default) do
+	require_relative 'test/test'
+end
+desc "run the tests"
+	task :test => :default
+
 desc "run the http server"
-task :default do
+task :server do
   sh "ruby app.rb"
 end
 
@@ -35,4 +41,3 @@ task :logs, :appname  do
   name = args[:appname] || 'XXX';
   sh "heroku apps:destroy #{name}"
 end
-
