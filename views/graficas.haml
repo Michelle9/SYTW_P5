@@ -1,7 +1,7 @@
 %table.table
   %tr                          
     %th
-      %h1 Información
+      %h1 Estadísticas
   %tr
     %th
       URL
@@ -19,9 +19,13 @@
 
 
 %h4 Visitas por país
+%br
 = pie_chart @country
+%br
 = geo_chart @country
+%br
 %h4 Visitas por ciudad
+%br
 = column_chart @ciudad , height: "500px", width: "900px"
 
 
